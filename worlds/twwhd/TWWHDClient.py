@@ -37,7 +37,7 @@ LETTER_BASE_ADDR = 0x803C4C8E
 LETTER_OWND_ADDR = 0x803C4C98
 
 # These addresses are used to check flags for locations.
-CHARTS_BITFLD_ADDR = 0x145B7C68
+CHARTS_BITFLD_ADDR = 0x145B7C70
 BASE_CHESTS_BITFLD_ADDR = 0x145B7EF4
 BASE_SWITCHES_BITFLD_ADDR = 0x145B7EF8
 BASE_PICKUPS_BITFLD_ADDR = 0x145B7F08
@@ -92,14 +92,18 @@ class TWWHDCommandProcessor(ClientCommandProcessor):
         """
         if isinstance(self.ctx, TWWHDContext):
             logger.info(f"Cemu Status: {self.ctx.cemu_status}")
+
     def _cmd_attach(self, base_addr: str) -> None:
         """
-        Display the current Cemu emulator connection status.
+        Connects to Cemu.
+
+        :param base_addr: The base cemu address.
         """
-        if isinstance(self.ctx, TWWHDContext):
+        if isinstance(self.ctx, TWWHDContext) and self.ctx.auth:
             self.ctx.CEMU_BASE_ADDR = int(base_addr, base=16)
-            logger.info(f"{self.ctx.CEMU_BASE_ADDR} is the base addr")
             self.ctx.cemu_sync_task = asyncio.create_task(cemu_sync_task(self.ctx), name="CemuSync")
+        elif isinstance(self.ctx, TWWHDContext) and not self.ctx.auth:
+            logger.info(f"Connect to the AP room before connecting Cemu!")
             
 
 
@@ -259,13 +263,13 @@ class TWWHDContext(CommonContext):
         This is necessary for the client to handle randomized charts correctly.
         """
         self.salvage_locations_map = {}
-        # for offset in range(49):
-        #     island_name = ISLAND_NUMBER_TO_NAME[offset + 1]
-        #     salvage_bit = ISLAND_NAME_TO_SALVAGE_BIT[island_name]
-        #     shuffled_island_number = read_short(CHARTS_MAPPING_ADDR + offset * 2)
-        #     shuffled_island_name = ISLAND_NUMBER_TO_NAME[shuffled_island_number]
-        #     salvage_location_name = f"{shuffled_island_name} - Sunken Treasure"
-        #     self.salvage_locations_map[salvage_location_name] = salvage_bit
+        for offset in range(49):
+            island_name = ISLAND_NUMBER_TO_NAME[offset + 1]
+            salvage_bit = ISLAND_NAME_TO_SALVAGE_BIT[island_name]
+            shuffled_island_number = offset + 1 # TODO: chart randomizer
+            shuffled_island_name = ISLAND_NUMBER_TO_NAME[shuffled_island_number]
+            salvage_location_name = f"{shuffled_island_name} - Sunken Treasure"
+            self.salvage_locations_map[salvage_location_name] = salvage_bit
 
 
 def read_short(ctx: TWWHDContext, console_address: int) -> int:
@@ -388,8 +392,8 @@ def check_special_location(ctx:TWWHDContext, location_name: str, data: TWWHDLoca
     # Either is fine for sending the check, so check both conditions. TODO
     # if location_name == "Windfall Island - Lenzo's House - Become Lenzo's Assistant":
     #     checked = (
-    #         TWWHDMemory.read_bool(data.address) & 0x6 == 0x6
-    #         or TWWHDMemory.read_bool(data.address) & 0x7 == 0x7
+    #         TWWHDMemory.read_bool(0x145B81A4 + data.address) & 0x6 == 0x6
+    #         or TWWHDMemory.read_bool(0x145B81A4 + data.address) & 0x7 == 0x7
     #     )
 
     # The "Windfall Island - Maggie - Delivery Reward" flag remains unknown.
@@ -404,17 +408,17 @@ def check_special_location(ctx:TWWHDContext, location_name: str, data: TWWHDLoca
     # 0x1 = Golden Feathers delivered, 0x2 = Mail sent by Hoskit's Girlfriend, 0x3 = Mail read by Link
     global TWWHDMemory
     if location_name == "Mailbox - Letter from Hoskit's Girlfriend":
-        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + data.address) & 0x3 == 0x3
+        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + 0x145B81A4 + data.address) & 0x3 == 0x3
 
     # For Letter from Baito's Mother, we need to check two bytes.
     # 0x1 = Note to Mom sent, 0x2 = Mail sent by Baito's Mother, 0x3 = Mail read by Link
     if location_name == "Mailbox - Letter from Baito's Mother":
-        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + data.address) & 0x3 == 0x3
+        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + 0x145B81A4 + data.address) & 0x3 == 0x3
 
     # For Letter from Grandma, we need to check two bytes.
     # 0x1 = Grandma saved, 0x2 = Mail sent by Grandma, 0x3 = Mail read by Link
     if location_name == "Mailbox - Letter from Grandma":
-        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + data.address) & 0x3 == 0x3
+        checked = TWWHDMemory.read_bool(ctx.CEMU_BASE_ADDR + 0x145B81A4 + data.address) & 0x3 == 0x3
 
     # We check if the bits for turning all five statues are set for the Ankle's reward.
     # For some reason, the bit for the Dragon Tingle Statue is separate from the rest.
@@ -443,6 +447,8 @@ def check_regular_location(ctx: TWWHDContext, curr_stage_id: int, data: TWWHDLoc
     :raises NotImplementedError: If a location with an unknown type is provided.
     """
     checked = False
+
+    # TODO: byte ordering, ie 1000 0000 0000 0000 is 7 and 0000 0000 1000 0000 is 15, 0000 0001 0000 0000 is 0
 
     # Check the saved bitfields for the stage.
     if data.type == TWWHDLocationType.CHEST:
@@ -480,27 +486,36 @@ async def check_locations(ctx: TWWHDContext) -> None:
     global TWWHDMemory
     # Read the bitfield for sunken treasure locations.
     ctx.charts_bitfield = int.from_bytes(TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CHARTS_BITFLD_ADDR, 8), byteorder="big")
+    print(ctx.charts_bitfield)
 
     # Read the bitfields once before the loop to speed things up a bit.
     ctx.chests_bitfields = {}
     ctx.switches_bitfields = {}
     ctx.pickups_bitfields = {}
     for stage_id in range(0xE):
-        chest_bitfield_addr = BASE_CHESTS_BITFLD_ADDR + (0x24 * stage_id)
-        switches_bitfield_addr = BASE_SWITCHES_BITFLD_ADDR + (0x24 * stage_id)
-        pickups_bitfield_addr = BASE_PICKUPS_BITFLD_ADDR + (0x24 * stage_id)
+        chest_bitfield_addr = BASE_CHESTS_BITFLD_ADDR + (0x27 * stage_id)
+        switches_bitfield_addr = BASE_SWITCHES_BITFLD_ADDR + (0x27 * stage_id)
+        pickups_bitfield_addr = BASE_PICKUPS_BITFLD_ADDR + (0x27 * stage_id)
 
-        ctx.chests_bitfields[stage_id] = int(TWWHDMemory.read_long(ctx.CEMU_BASE_ADDR + chest_bitfield_addr))
-        ctx.switches_bitfields[stage_id] = int.from_bytes(
-            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + switches_bitfield_addr, 10), byteorder="big"
+        ctx.chests_bitfields[stage_id] = int.from_bytes(
+            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + chest_bitfield_addr, 0x4), byteorder="big"
         )
-        ctx.pickups_bitfields[stage_id] = int(TWWHDMemory.read_long(ctx.CEMU_BASE_ADDR + pickups_bitfield_addr))
+        ctx.switches_bitfields[stage_id] = int.from_bytes(
+            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + switches_bitfield_addr, 0X10), byteorder="big"
+        )
+        ctx.pickups_bitfields[stage_id] = int.from_bytes(
+            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + pickups_bitfield_addr, 0x4), byteorder="big"
+        )
 
-    ctx.curr_stage_chests_bitfield = int(TWWHDMemory.read_long(ctx.CEMU_BASE_ADDR + CURR_STAGE_CHESTS_BITFLD_ADDR))
-    ctx.curr_stage_switches_bitfield = int.from_bytes(
-        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_SWITCHES_BITFLD_ADDR, 10), byteorder="big"
+    ctx.curr_stage_chests_bitfield = int.from_bytes(
+        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_CHESTS_BITFLD_ADDR, 0x4), byteorder="big"
     )
-    ctx.curr_stage_pickups_bitfield = int(TWWHDMemory.read_long(ctx.CEMU_BASE_ADDR + CURR_STAGE_PICKUPS_BITFLD_ADDR))
+    ctx.curr_stage_switches_bitfield = int.from_bytes(
+        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_SWITCHES_BITFLD_ADDR, 0X10), byteorder="big"
+    )
+    ctx.curr_stage_pickups_bitfield = int.from_bytes(
+        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_PICKUPS_BITFLD_ADDR, 0x4), byteorder="big"
+    )
 
     # We check which locations are currently checked on the current stage.
     curr_stage_id = TWWHDMemory.read_short(ctx.CEMU_BASE_ADDR + CURR_STAGE_ID_ADDR)
@@ -514,9 +529,9 @@ async def check_locations(ctx: TWWHDContext) -> None:
                 checked = bool((ctx.charts_bitfield >> salvage_bit) & 1)
         elif data.type == TWWHDLocationType.BOCTO:
             assert data.address is not None
-            checked = bool((read_short(ctx, data.address) >> data.bit) & 1)
+            checked = bool((TWWHDMemory.read_uchar(ctx.CEMU_BASE_ADDR + 0x145B81A4 + data.address) >> data.bit) & 1)
         elif data.type == TWWHDLocationType.EVENT:
-            checked = bool((TWWHDMemory.read_short(ctx.CEMU_BASE_ADDR + data.address) >> data.bit) & 1)
+            checked = bool((TWWHDMemory.read_uchar(ctx.CEMU_BASE_ADDR + 0x145B81A4 + data.address) >> data.bit) & 1)
         elif data.type == TWWHDLocationType.SPECL:
             checked = check_special_location(ctx, location, data)
         else:
@@ -528,6 +543,7 @@ async def check_locations(ctx: TWWHDContext) -> None:
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
                     ctx.finished_game = True
             else:
+                
                 ctx.locations_checked.add(TWWHDLocation.get_apid(data.code))
 
     # Send the list of newly-checked locations to the server.

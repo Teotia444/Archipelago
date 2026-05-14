@@ -1333,7 +1333,7 @@ def set_rules(world: "TWWHDWorld") -> None:  # noqa: F405
         lambda state: state.has("Grappling Hook", player) and state._tww_has_chart_for_island(player, 34),
     )
     set_rule_if_exists(
-        "Bird's Peak Rock - Sunken Treasure",
+        "Birds Peak Rock - Sunken Treasure",
         lambda state: state.has("Grappling Hook", player) and state._tww_has_chart_for_island(player, 35),
     )
     set_rule_if_exists(

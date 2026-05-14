@@ -220,7 +220,7 @@ class DungeonItem(Choice):
     option_dungeon = 2
     option_any_dungeon = 3
     option_local = 4
-    option_keylunacy = 5
+    # option_keylunacy = 5 TODO
     default = 2
 
     @property
@@ -509,6 +509,8 @@ class RandomizeStartingIsland(Toggle):
 
 class RandomizeCharts(Toggle):
     """
+    **DEV NOTE:** This option is currently unimplemented and will be ignored.
+
     Randomizes which sector is drawn on each Triforce/Treasure Chart.
     """
 

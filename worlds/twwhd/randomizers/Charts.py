@@ -12,9 +12,9 @@ ISLAND_NUMBER_TO_NAME: dict[int, str] = {
     3: "Northern Fairy Island",
     4: "Gale Isle",
     5: "Crescent Moon Island",
-    6: "Seven-Star Isles",
+    6: "Seven Star Isles",
     7: "Overlook Island",
-    8: "Four-Eye Reef",
+    8: "Four Eye Reef",
     9: "Mother and Child Isles",
     10: "Spectacle Island",
     11: "Windfall Island",
@@ -28,10 +28,10 @@ ISLAND_NUMBER_TO_NAME: dict[int, str] = {
     19: "Eastern Fairy Island",
     20: "Fire Mountain",
     21: "Star Belt Archipelago",
-    22: "Three-Eye Reef",
+    22: "Three Eye Reef",
     23: "Greatfish Isle",
     24: "Cyclops Reef",
-    25: "Six-Eye Reef",
+    25: "Six Eye Reef",
     26: "Tower of the Gods Sector",
     27: "Eastern Triangle Island",
     28: "Thorned Fairy Island",
@@ -41,9 +41,9 @@ ISLAND_NUMBER_TO_NAME: dict[int, str] = {
     32: "Southern Triangle Island",
     33: "Private Oasis",
     34: "Bomb Island",
-    35: "Bird's Peak Rock",
+    35: "Birds Peak Rock",
     36: "Diamond Steppe Island",
-    37: "Five-Eye Reef",
+    37: "Five Eye Reef",
     38: "Shark Island",
     39: "Southern Fairy Island",
     40: "Ice Ring Isle",
@@ -52,10 +52,10 @@ ISLAND_NUMBER_TO_NAME: dict[int, str] = {
     43: "Horseshoe Island",
     44: "Outset Island",
     45: "Headstone Island",
-    46: "Two-Eye Reef",
+    46: "Two Eye Reef",
     47: "Angular Isles",
     48: "Boating Course",
-    49: "Five-Star Isles",
+    49: "Five Star Isles",
 }
 
 
@@ -85,8 +85,8 @@ class ChartRandomizer:
         # Shuffles the list of island numbers if charts are randomized.
         # The shuffled island numbers determine which sector each chart points to.
         shuffled_island_numbers = list(self.island_number_to_chart_name.keys())
-        if options.randomize_charts:
-            self.world.random.shuffle(shuffled_island_numbers)
+        # if options.randomize_charts:
+        #     self.world.random.shuffle(shuffled_island_numbers)
 
         for original_item_name in reversed(original_item_names):
             # Assign each chart to its new island.
