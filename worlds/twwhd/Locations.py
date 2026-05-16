@@ -782,7 +782,7 @@ LOCATION_TABLE: dict[str, TWWHDLocationData] = {
 
     # Bird's Peak Rock
     "Birds Peak Rock - Cave Chest": TWWHDLocationData(
-        202, TWWHDFlag.PZL_CVE, "Bird's Peak Rock Secret Cave", 0xC, TWWHDLocationType.CHEST, 16
+        202, TWWHDFlag.PZL_CVE, "Birds Peak Rock Secret Cave", 0xC, TWWHDLocationType.CHEST, 16
     ),
 
     # Pawprint Isle

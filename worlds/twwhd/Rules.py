@@ -942,7 +942,7 @@ def set_rules(world: "TWWHDWorld") -> None:  # noqa: F405
     )
 
     # Bird's Peak Rock
-    set_rule_if_exists("Bird's Peak Rock - Cave Chest", lambda state: can_play_winds_requiem(state, player))
+    set_rule_if_exists("Birds Peak Rock - Cave Chest", lambda state: can_play_winds_requiem(state, player))
 
     # Pawprint Isle
     set_rule_if_exists("Pawprint Isle - Chu Chu Cave Chest", lambda state: True)

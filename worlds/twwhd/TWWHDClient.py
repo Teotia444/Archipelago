@@ -342,9 +342,6 @@ def _give_item(ctx: TWWHDContext, item_name: str) -> bool:
     
     
     default_give_item(ctx, ITEM_TABLE[item_name].item_id, ITEM_TABLE[item_name].item_slot)
-
-    # TODO
-    # Loop through the item array, placing the item in an empty slot.
     return True
 
 
@@ -486,7 +483,6 @@ async def check_locations(ctx: TWWHDContext) -> None:
     global TWWHDMemory
     # Read the bitfield for sunken treasure locations.
     ctx.charts_bitfield = int.from_bytes(TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CHARTS_BITFLD_ADDR, 8), byteorder="big")
-    print(ctx.charts_bitfield)
 
     # Read the bitfields once before the loop to speed things up a bit.
     ctx.chests_bitfields = {}
@@ -501,7 +497,7 @@ async def check_locations(ctx: TWWHDContext) -> None:
             TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + chest_bitfield_addr, 0x4), byteorder="big"
         )
         ctx.switches_bitfields[stage_id] = int.from_bytes(
-            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + switches_bitfield_addr, 0X10), byteorder="big"
+            TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + switches_bitfield_addr, 10), byteorder="big"
         )
         ctx.pickups_bitfields[stage_id] = int.from_bytes(
             TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + pickups_bitfield_addr, 0x4), byteorder="big"
@@ -511,7 +507,7 @@ async def check_locations(ctx: TWWHDContext) -> None:
         TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_CHESTS_BITFLD_ADDR, 0x4), byteorder="big"
     )
     ctx.curr_stage_switches_bitfield = int.from_bytes(
-        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_SWITCHES_BITFLD_ADDR, 0X10), byteorder="big"
+        TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_SWITCHES_BITFLD_ADDR, 10), byteorder="big"
     )
     ctx.curr_stage_pickups_bitfield = int.from_bytes(
         TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + CURR_STAGE_PICKUPS_BITFLD_ADDR, 0x4), byteorder="big"

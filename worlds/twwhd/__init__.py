@@ -86,7 +86,15 @@ class TWWHDContainer(APPlayerContainer):
                 output_plando_file["World 1"]["locations"][key] = "Fathers Letter"
             else:
                 output_plando_file["World 1"]["locations"][key] = value["name"]
+
+        output_config_file = {}
+        for key, value in dict.items(self.data["Options"]):
+            if(str(key).find("progression_") != -1):
+                output_config_file[key] = True if value == 1 else False
+        output_config_file["plandomizer"] = True
+
         opened_zipfile.writestr("plandomizer.yaml", bytes(yaml.safe_dump(output_plando_file, sort_keys=False), "utf-8"))
+        opened_zipfile.writestr("config.yaml", bytes(yaml.safe_dump(output_config_file, sort_keys=False), "utf-8"))
         
 
 
