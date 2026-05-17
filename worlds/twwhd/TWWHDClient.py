@@ -352,6 +352,12 @@ async def give_items(ctx: TWWHDContext) -> None:
     :param ctx: The Wind Waker HD client context.
     """
     if check_ingame(ctx):
+
+        # Clear all the fathers letters that the player might have collected, they're fake items
+        for i in range(10):
+            if(TWWHDMemory.read_uchar(ctx.CEMU_BASE_ADDR + 0x145B7C06 + i) == 0x98): #fathers letter id
+                TWWHDMemory.write_uchar(ctx.CEMU_BASE_ADDR + 0x145B7C06 + i, 0xFF)
+
         # Read the expected index of the player, which is the index of the next item they're expecting to receive.
         # The expected index starts at 0 for a fresh save file.
         expected_idx = read_short(ctx, EXPECTED_INDEX_ADDR)
