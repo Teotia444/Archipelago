@@ -366,6 +366,9 @@ async def give_items(ctx: TWWHDContext) -> None:
         # Give the player all items at an index greater than or equal to the expected index.
         for idx, item in enumerate(received_items[expected_idx:], start=expected_idx):
             # Attempt to give the item and increment the expected index.
+            if item.player == ctx.slot:
+                write_short(ctx, EXPECTED_INDEX_ADDR, idx + 1)
+                continue
             while not _give_item(ctx, LOOKUP_ID_TO_NAME[item.item]):
                 await asyncio.sleep(0.01)
 
