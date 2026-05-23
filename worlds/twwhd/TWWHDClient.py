@@ -38,12 +38,12 @@ LETTER_OWND_ADDR = 0x803C4C98
 
 # These addresses are used to check flags for locations.
 CHARTS_BITFLD_ADDR = 0x145B7C70
-BASE_CHESTS_BITFLD_ADDR = 0x145B7EF4
-BASE_SWITCHES_BITFLD_ADDR = 0x145B7EF8
-BASE_PICKUPS_BITFLD_ADDR = 0x145B7F08
+BASE_CHESTS_BITFLD_ADDR = 0x145B7F00
+BASE_SWITCHES_BITFLD_ADDR = 0x145B7F04
+BASE_PICKUPS_BITFLD_ADDR = 0x145B7F14
 CURR_STAGE_CHESTS_BITFLD_ADDR = 0x145B82F8
 CURR_STAGE_SWITCHES_BITFLD_ADDR = 0x145B82FC
-CURR_STAGE_PICKUPS_BITFLD_ADDR = 0x145B8308
+CURR_STAGE_PICKUPS_BITFLD_ADDR = 0x145B830C
 
 # The expected index for the following item that should be received. Uses event bits 0x60 and 0x61.
 EXPECTED_INDEX_ADDR = 0x145B81F8
@@ -322,7 +322,7 @@ def _give_death(ctx: TWWHDContext) -> None:
         ctx.has_send_death = True
         write_short(ctx, CURR_HEALTH_ADDR, 0)
 
-def default_give_item(ctx:TWWHDContext, id:int, slot:int):
+def default_give_item(ctx:TWWHDContext, id:int):
     global TWWHDMemory
     b = TWWHDMemory.write_uchar(ctx.CEMU_BASE_ADDR + 0x28F8844, id) 
     return b
@@ -337,11 +337,10 @@ def _give_item(ctx: TWWHDContext, item_name: str) -> bool:
     :param item_name: Name of the item to give.
     :return: Whether the item was successfully given.
     """
-    if not check_ingame(ctx):
+    if not check_ingame(ctx) or not (TWWHDMemory.read_uchar(ctx.CEMU_BASE_ADDR + 0x28F8844) == 0xFF):
         return False
     
-    
-    default_give_item(ctx, ITEM_TABLE[item_name].item_id, ITEM_TABLE[item_name].item_slot)
+    default_give_item(ctx, ITEM_TABLE[item_name].item_id)
     return True
 
 
@@ -372,9 +371,6 @@ async def give_items(ctx: TWWHDContext) -> None:
         # Give the player all items at an index greater than or equal to the expected index.
         for idx, item in enumerate(received_items[expected_idx:], start=expected_idx):
             # Attempt to give the item and increment the expected index.
-            if item.player == ctx.slot:
-                write_short(ctx, EXPECTED_INDEX_ADDR, idx + 1)
-                continue
             while not _give_item(ctx, LOOKUP_ID_TO_NAME[item.item]):
                 await asyncio.sleep(0.01)
 
@@ -498,9 +494,9 @@ async def check_locations(ctx: TWWHDContext) -> None:
     ctx.switches_bitfields = {}
     ctx.pickups_bitfields = {}
     for stage_id in range(0xE):
-        chest_bitfield_addr = BASE_CHESTS_BITFLD_ADDR + (0x27 * stage_id)
-        switches_bitfield_addr = BASE_SWITCHES_BITFLD_ADDR + (0x27 * stage_id)
-        pickups_bitfield_addr = BASE_PICKUPS_BITFLD_ADDR + (0x27 * stage_id)
+        chest_bitfield_addr = BASE_CHESTS_BITFLD_ADDR + (0x24 * stage_id)
+        switches_bitfield_addr = BASE_SWITCHES_BITFLD_ADDR + (0x24 * stage_id)
+        pickups_bitfield_addr = BASE_PICKUPS_BITFLD_ADDR + (0x24 * stage_id)
 
         ctx.chests_bitfields[stage_id] = int.from_bytes(
             TWWHDMemory.read_bytes(ctx.CEMU_BASE_ADDR + chest_bitfield_addr, 0x4), byteorder="big"
@@ -548,7 +544,6 @@ async def check_locations(ctx: TWWHDContext) -> None:
                     await ctx.send_msgs([{"cmd": "StatusUpdate", "status": ClientStatus.CLIENT_GOAL}])
                     ctx.finished_game = True
             else:
-                
                 ctx.locations_checked.add(TWWHDLocation.get_apid(data.code))
 
     # Send the list of newly-checked locations to the server.
