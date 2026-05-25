@@ -1,64 +1,74 @@
 # Setup Guide for The Wind Waker Archipelago
 
-Welcome to The Wind Waker HD Archipelago! This guide will help you set up the randomizer and play your first multiworld.
-If you're playing The Wind Waker HD, you must follow a few simple steps to get started.
+Welcome to The Wind Waker Archipelago! This guide will help you set up the randomizer and play your first multiworld.
+If you're playing The Wind Waker, you must follow a few simple steps to get started.
 
 ## Requirements
 
-You'll need the following components to be able to play The Wind Waker HD:
-* Install [Cemu Emulator](https://github.com/cemu-project/Cemu/releases/). **We recommend using the latest release.**
-* The latest version of the [TWWHD AP Randomizer Build](https://github.com/Teotia444/TWWHD-Randomizer-expbuilds/actions).
-    * To download the latest version, click on the latest passing build (one with a green check, the others are logic check 
-    that fails because I broke actions), and in the Summary tab, you can download the Windows build or the Mac build.
-    Note that Linux is not supported for now, since upstream doesn't support it either. For now do not try to use the wuhb
-    image! Wii U support is not finished.
-* A The Wind Waker HD decrypted folder (North American version). The typical folder that comes from dumping the game from a
-  Wii U with dumpling for instance. It should contain 3 folders inside: `"code", "content", "meta"`.
-* The latest APWorld for TWWHD. In order to install it, download the repo (on the initial page, click the Code button, then 
-  download zip), and rename the downloaded zip file into a .apworld file. Then in the AP launcher, install the new APWorld 
-  as usual. Make sure to restart the launcher if TWWHD doesn't show up immediately.
+You'll need the following components to be able to play The Wind Waker:
+* Install [Dolphin Emulator](https://dolphin-emu.org/download/). **We recommend using the latest release.**
+    * Linux users can use the flatpak package
+    [available on Flathub](https://flathub.org/apps/org.DolphinEmu.dolphin-emu).
+* The latest version of the [TWW AP Randomizer Build](https://github.com/tanjo3/wwrando/releases?q=tag%3Aap_2).
+    * Please note that this build is **different** from the one the standalone randomizer uses. This build is
+      specifically for Archipelago.
+* A The Wind Waker ISO (North American version), probably named "Legend of Zelda, The - The Wind Waker (USA).iso".
 
+Optionally, you can also download:
+* [Wind Waker Tracker](https://github.com/Mysteryem/ww-poptracker/releases/latest)
+  * Requires [PopTracker](https://github.com/black-sliver/PopTracker/releases)
+* [Custom Wind Waker Player Models](https://github.com/Sage-of-Mirrors/Custom-Wind-Waker-Player-Models)
 
 ## Setting Up a YAML
 
 All players playing The Wind Waker must provide the room host with a YAML file containing the settings for their world.
-To generate the base YAML, in the AP launcher, go into the "Misc" tab and click on Generate Template Options. Then, 
-in the newly opened window, search for the TWWHD yaml and edit the settings as you wish. NOTE: all entrance randomizers
-are currently unimplemented, do not enable them or you may softlock!
-Once you're happy with the settings, pass the YAML file to the person generating the seed. Make sure they have the TWWHD
-APWorld installed, too.
+Visit the [The Wind Waker options page](/games/The%20Wind%20Waker/player-options) to generate a YAML with your desired
+options. Only locations categorized under the options enabled under "Progression Locations" will be randomized in your
+world. Once you're happy with your settings, provide the room host with your YAML file and proceed to the next step.
 
 ## Connecting to a Room
 
-The multiworld host will provide you a link to download your APTWWHD file or a zip file containing everyone's files. The
-APTWWHD file should be named `P#_<name>_XXXXX.aptww`, where `#` is your player ID, `<name>` is your player name, and
+The multiworld host will provide you a link to download your APTWW file or a zip file containing everyone's files. The
+APTWW file should be named `P#_<name>_XXXXX.aptww`, where `#` is your player ID, `<name>` is your player name, and
 `XXXXX` is the room ID. The host should also provide you with the room's server name and port number.
 
 Once you're ready, follow these steps to connect to the room:
-1. Run the TWWHD AP Randomizer Build. If this is the first time you've opened the randomizer, you'll need to specify the
-path to your The Wind Waker HD folder and the output folder for the randomized game. These will be saved for the next time 
-you open the program.
+1. Run the TWW AP Randomizer Build. If this is the first time you've opened the randomizer, you'll need to specify the
+path to your The Wind Waker ISO and the output folder for the randomized ISO. These will be saved for the next time you
+open the program.
 2. Modify any cosmetic convenience tweaks and player customization options as desired.
-3. For the APTWWHD file, browse and locate the path to your APTWWHD file.
-4. Click `Randomize` at the bottom right. This randomizes the game and puts it in the output folder you specified. 
-5. Open Cemu and use it to open the randomized game.
-6. Start your archipelago launcher and find `The Wind Waker HD Client`, which will open the text client.
+3. For the APTWW file, browse and locate the path to your APTWW file.
+4. Click `Randomize` at the bottom right. This randomizes the ISO and puts it in the output folder you specified. The
+file will be named `TWW AP_YYYYY_P# (<name>).iso`, where `YYYYY` is the seed name, `#` is your player ID, and `<name>`
+is your player (slot) name. Verify that the values are correct for the multiworld.
+5. Open Dolphin and use it to open the randomized ISO.
+6. Start `ArchipelagoLauncher.exe` (without `.exe` on Linux) and choose `The Wind Waker Client`, which will open the
+text client. If Dolphin is not already open, or you have yet to start a new file, you will be prompted to do so.
+    * Once you've opened the ISO in Dolphin, the client should say "Dolphin connected successfully.".
 7. Connect to the room by entering the server name and port number at the top and pressing `Connect`. For rooms hosted
 on the website, this will be `archipelago.gg:<port>`, where `<port>` is the port number. If a game is hosted from the
 `ArchipelagoServer.exe` (without `.exe` on Linux), the port number will default to `38281` but may be changed in the
 `host.yaml`.
-8. Once you're connected, go into Cemu and click on File->Open Cemu Folder. You should then see a `log.txt` file, open
-it with a text editor. Find the line that reads something like `Init Wii U memory space (base: 0x.......)`
-Copy the hex code that is noted right after base. Make sure you also copy the 0x part.
-9. Go back to the Wind Waker HD Client console and type the following: `/attach 0xXXXXXX..` where 0xXXXX represents the
-hex code you just copied.
-10. The client should notify that Cemu connected succesfully. You can start playing.
+8. If you've opened an ISO corresponding to the multiworld to which you are connected, it should authenticate your slot
+name automatically when you start a new save file.
 
 ## Troubleshooting
 
 * Ensure you are running the same version of Archipelago on which the multiworld was generated.
-* Ensure `twwhd.apworld` is not in your Archipelago installation's `custom_worlds` folder.
-* Ensure you are using the correct randomizer build for the version of Archipelago you are using.
-* Do not run the Archipelago Launcher or Cemu as an administrator on Windows.
-* If you encounter issues with authenticating, ensure that the randomized folder is open in Cemu and corresponds to the
+* Ensure `tww.apworld` is not in your Archipelago installation's `custom_worlds` folder.
+* Ensure you are using the correct randomizer build for the version of Archipelago you are using. The build should
+  provide an error message directing you to the correct version. You can also look at the release notes of TWW AP builds
+  [here](https://github.com/tanjo3/wwrando/releases?q=tag%3Aap_2) to see which versions of Archipelago each build is
+  compatible with.
+* Do not run the Archipelago Launcher or Dolphin as an administrator on Windows.
+* If you encounter issues with authenticating, ensure that the randomized ROM is open in Dolphin and corresponds to the
   multiworld to which you are connecting.
+* Ensure that you do not have any Dolphin cheats or codes enabled. Some cheats or codes can unexpectedly interfere with
+  emulation and make troubleshooting errors difficult.
+* Ensure that `Enable Emulated Memory Size Override` in Dolphin (under `Options` > `Configuration` > `Advanced`) is
+  **disabled**.
+* If the client cannot connect to Dolphin, ensure Dolphin is on the same drive as Archipelago. Having Dolphin on an
+  external drive has reportedly caused connection issues.
+* Ensure the `Fallback Region` in Dolphin (under `Options` > `Configuration` > `General`) is set to `NTSC-U`.
+* If you run with a custom GC boot menu, you'll need to skip it by going to `Options` > `Configuration` > `GameCube`
+  and checking `Skip Main Menu`.
