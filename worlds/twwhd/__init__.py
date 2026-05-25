@@ -91,6 +91,8 @@ class TWWHDContainer(APPlayerContainer):
         for key, value in dict.items(self.data["Options"]):
             if(str(key).find("progression_") != -1):
                 output_config_file[key] = True if value == 1 else False
+            if(str(key).find("classic_mode") != -1):
+                output_config_file[key] = True if value == 1 else False
         output_config_file["plandomizer"] = True
 
         opened_zipfile.writestr("plandomizer.yaml", bytes(yaml.safe_dump(output_plando_file, sort_keys=False), "utf-8"))

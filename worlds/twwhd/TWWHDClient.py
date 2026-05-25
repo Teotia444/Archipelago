@@ -56,7 +56,7 @@ TINGLE_STATUE_2_ADDR = 0x803C5249  # 0x0F are the bits for the remaining Tingle 
 CURR_STAGE_ID_ADDR = 0x145b831c
 
 # This address is used to check the stage name to verify that the player is in-game before sending items.
-CURR_STAGE_NAME_ADDR = 0x104741e4
+CURR_STAGE_NAME_ADDR = 0x104741F0
 
 # This address is the start of an array that we use to inform us of which charts lead where.
 # The array is of length 49, and each element is two bytes. The index represents the chart's original destination, and
@@ -373,6 +373,8 @@ async def give_items(ctx: TWWHDContext) -> None:
             # Attempt to give the item and increment the expected index.
             while not _give_item(ctx, LOOKUP_ID_TO_NAME[item.item]):
                 await asyncio.sleep(0.01)
+                if not check_ingame(ctx):
+                    return
 
             # Increment the expected index.
             write_short(ctx, EXPECTED_INDEX_ADDR, idx + 1)
@@ -449,8 +451,6 @@ def check_regular_location(ctx: TWWHDContext, curr_stage_id: int, data: TWWHDLoc
     :raises NotImplementedError: If a location with an unknown type is provided.
     """
     checked = False
-
-    # TODO: byte ordering, ie 1000 0000 0000 0000 is 7 and 0000 0000 1000 0000 is 15, 0000 0001 0000 0000 is 0
 
     # Check the saved bitfields for the stage.
     if data.type == TWWHDLocationType.CHEST:

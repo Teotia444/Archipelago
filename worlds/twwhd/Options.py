@@ -220,7 +220,7 @@ class DungeonItem(Choice):
     option_dungeon = 2
     option_any_dungeon = 3
     option_local = 4
-    # option_keylunacy = 5 TODO
+    option_keylunacy = 5
     default = 2
 
     @property
@@ -354,6 +354,8 @@ class ExcludedDungeons(OptionSet):
 
 class ChestTypeMatchesContents(Toggle):
     """
+    **DEV NOTE:** This option is currently unimplemented and will be ignored.
+
     Changes the chest type to reflect its contents. A metal chest has a progress item, a wooden chest has a non-progress
     item or a consumable, and a green chest has a potentially required dungeon key.
     """
@@ -623,14 +625,6 @@ class PrioritizeRemoteHints(Toggle):
     display_name = "Prioritize Remote Location Hints"
 
 
-class SwiftSail(DefaultOnToggle):
-    """
-    Sailing speed is doubled and the direction of the wind is always at your back as long as the sail is out.
-    """
-
-    display_name = "Swift Sail"
-
-
 class InstantTextBoxes(DefaultOnToggle):
     """
     Text appears instantly. Also, the B button is changed to instantly skip through text as long as you hold it down.
@@ -674,6 +668,13 @@ class RemoveMusic(Toggle):
     """
 
     display_name = "Remove Music"
+
+class ClassicMode(Toggle):
+    """
+    Restores glitches from the SD version into the randomizer, like wind waker dive or dry storage.
+    """
+
+    display_name = "Classic Mode"
 
 
 @dataclass
@@ -738,12 +739,12 @@ class TWWHDOptions(PerGameCommonOptions):
     # num_barren_hints: NumBarrenHints
     # num_path_hints: NumPathHints
     # prioritize_remote_hints: PrioritizeRemoteHints
-    swift_sail: SwiftSail
     instant_text_boxes: InstantTextBoxes
     reveal_full_sea_chart: RevealFullSeaChart
     add_shortcut_warps_between_dungeons: AddShortcutWarpsBetweenDungeons
     skip_rematch_bosses: SkipRematchBosses
     remove_music: RemoveMusic
+    classic_mode: ClassicMode
     death_link: DeathLink
 
     def get_slot_data_dict(self) -> dict[str, Any]:
@@ -787,9 +788,9 @@ class TWWHDOptions(PerGameCommonOptions):
             "randomize_boss_entrances",
             "randomize_secret_cave_inner_entrances",
             "randomize_fairy_fountain_entrances",
-            "swift_sail",
             "skip_rematch_bosses",
             "remove_music",
+            "classic_mode",
             "death_link",
         )
 
@@ -847,12 +848,12 @@ class TWWHDOptions(PerGameCommonOptions):
             "randomize_enemies",
             "randomize_starting_island",
             "randomize_charts",
-            "swift_sail",
             "instant_text_boxes",
             "reveal_full_sea_chart",
             "add_shortcut_warps_between_dungeons",
             "skip_rematch_bosses",
             "remove_music",
+            "classic_mode",
         )
 
 
@@ -919,7 +920,6 @@ twwhd_option_groups: list[OptionGroup] = [
     OptionGroup(
         "Convenience Tweaks",
         [
-            SwiftSail,
             InstantTextBoxes,
             RevealFullSeaChart,
             SkipRematchBosses,
